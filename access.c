@@ -20,7 +20,7 @@ int flags;
 int getquota(void) {
   /* flags: for all users */
   flags = FL_ALL | FL_USER;
-  int type = USRQUOTA;
+  int type = 0;
   struct quota_handle **handles;
   char name[MAXNAMELEN];
   int i, j;
