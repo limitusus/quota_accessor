@@ -35,7 +35,7 @@ int getquota(void) {
                                );
   
   for (i = 0; handles[i]; i++) {
-    struct quota_handle* h;
+    struct quota_handle* h = handles[i];
     h->qh_ops->scan_dquots(h, output);
     setpwent();
     while ((pwent = getpwent())) {
