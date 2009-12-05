@@ -17,7 +17,6 @@ all : objs test
 objs : $(OBJS)
 
 test : $(OBJS)
-	echo $(addprefix $(QUOTADIR)/,QUOTAOBJS)
 	$(CC) -o main $(LCFLAGS) $(OBJS) $(addprefix $(QUOTADIR)/, $(QUOTAOBJS))
 
 $(OBJS) : %.o : %.c

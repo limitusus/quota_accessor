@@ -14,15 +14,12 @@ static int output(struct dquot *dquot, char *name);
 int fmt = -1;
 struct dquot dquot_cache[MAX_CACHE_DQUOTS];
 int cached_dquots;
-int flags;
+int flags = FL_ALL | FL_USER; /* flags: for all users */
 
 int getquota(void) {
-  /* flags: for all users */
-  flags = FL_ALL | FL_USER;
   int type = 0;
   struct quota_handle **handles;
-  int i, j;
-  struct passwd *pwent; /* For /etc/passwd entry */
+  int i;
 
   /* main */
   init_kernel_interface();
@@ -35,15 +32,6 @@ int getquota(void) {
   for (i = 0; handles[i]; i++) {
     struct quota_handle* h = handles[i];
     h->qh_ops->scan_dquots(h, output);
-    setpwent();
-    while ((pwent = getpwent())) {
-      for (j = 0; j < cached_dquots && pwent->pw_uid != dquot_cache[j].dq_id; j++);
-      if (j < cached_dquots && !(dquot_cache[j].dq_flags & DQ_PRINTED)) {
-        print(dquot_cache+i, pwent->pw_name);
-        dquot_cache[j].dq_flags |= DQ_PRINTED;
-      }
-    }
-    endpwent();
   }
 
   return 0;
@@ -69,10 +57,8 @@ static int output(struct dquot *dquot, char *name)
 {
   char namebuf[MAXNAMELEN];
   
-  if (!name) {
-    id2name(dquot->dq_id, dquot->dq_h->qh_type, namebuf);
-    name = namebuf;
-  }
+  id2name(dquot->dq_id, dquot->dq_h->qh_type, namebuf);
+  name = namebuf;
   print(dquot, name);
   return 0;
 }
