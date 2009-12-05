@@ -1,2 +1,2 @@
-quota によって得られる情報を取得してAPIとして提供する予定...
+This program will provide API for information from quota(1)
 
