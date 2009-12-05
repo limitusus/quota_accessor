@@ -8,7 +8,6 @@
 #include "access.h"
 
 static void print(struct dquot *dquot, char *name);
-static char overlim(uint usage, uint softlim, uint hardlim);
 static int output(struct dquot *dquot, char *name);
 
 /* flags must be configured before calling create_handle_list() */
@@ -22,7 +21,6 @@ int getquota(void) {
   flags = FL_ALL | FL_USER;
   int type = 0;
   struct quota_handle **handles;
-  char name[MAXNAMELEN];
   int i, j;
   struct passwd *pwent; /* For /etc/passwd entry */
 
@@ -55,55 +53,15 @@ int getquota(void) {
 static void print(struct dquot *dquot, char *name)
 {
   char pname[MAXNAMELEN];
-  char time[MAXTIMELEN];
-  char numbuf[3][MAXNUMLEN];
+  char numbuf[MAXNUMLEN];
 	
   struct util_dqblk *entry = &dquot->dq_dqb;
 
   if (!entry->dqb_curspace && !entry->dqb_curinodes && !(flags & FL_VERBOSE))
     return;
   sstrncpy(pname, name, sizeof(pname));
-  if (flags & FL_TRUNCNAMES)
-    pname[PRINTNAMELEN] = 0;
-  if (entry->dqb_bsoftlimit && toqb(entry->dqb_curspace) >= entry->dqb_bsoftlimit)
-    if (flags & FL_RAWGRACE)
-      sprintf(time, "%Lu", (unsigned long long)entry->dqb_btime);
-    else
-      difftime2str(entry->dqb_btime, time);
-  else
-    if (flags & FL_RAWGRACE)
-      strcpy(time, "0");
-    else
-      time[0] = 0;
-  space2str(toqb(entry->dqb_curspace), numbuf[0], flags & FL_SHORTNUMS);
-  space2str(entry->dqb_bsoftlimit, numbuf[1], flags & FL_SHORTNUMS);
-  space2str(entry->dqb_bhardlimit, numbuf[2], flags & FL_SHORTNUMS);
-  printf("%-*s %c%c %7s %7s %7s %6s", PRINTNAMELEN, pname,
-         overlim(qb2kb(toqb(entry->dqb_curspace)), qb2kb(entry->dqb_bsoftlimit), qb2kb(entry->dqb_bhardlimit)),
-         overlim(entry->dqb_curinodes, entry->dqb_isoftlimit, entry->dqb_ihardlimit),
-         numbuf[0], numbuf[1], numbuf[2], time);
-  if (entry->dqb_isoftlimit && entry->dqb_curinodes >= entry->dqb_isoftlimit)
-    if (flags & FL_RAWGRACE)
-      sprintf(time, "%Lu", (unsigned long long)entry->dqb_itime);
-    else
-      difftime2str(entry->dqb_itime, time);
-  else
-    if (flags & FL_RAWGRACE)
-      strcpy(time, "0");
-    else
-      time[0] = 0;
-  number2str(entry->dqb_curinodes, numbuf[0], flags & FL_SHORTNUMS);
-  number2str(entry->dqb_isoftlimit, numbuf[1], flags & FL_SHORTNUMS);
-  number2str(entry->dqb_ihardlimit, numbuf[2], flags & FL_SHORTNUMS);
-  printf(" %7s %5s %5s %6s\n", numbuf[0], numbuf[1], numbuf[2], time);
-}
-
-/* Are we over soft or hard limit? */
-static char overlim(uint usage, uint softlim, uint hardlim)
-{
-  if ((usage > softlim && softlim) || (usage > hardlim && hardlim))
-    return '+';
-  return '-';
+  space2str(toqb(entry->dqb_curspace), numbuf, flags & FL_SHORTNUMS);
+  printf("%-*s %7s\n", PRINTNAMELEN, pname, numbuf);
 }
 
 /* Callback routine called by scan_dquots on each dquot */
