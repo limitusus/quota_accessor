@@ -18,8 +18,8 @@ int cached_dquots;
 int flags;
 
 int getquota(void) {
-  /* flags: for all users, not cached */
-  flags = FL_ALL | FL_USER | FL_NOCACHE;
+  /* flags: for all users */
+  flags = FL_ALL | FL_USER;
   int type = USRQUOTA;
   struct quota_handle **handles;
   char name[MAXNAMELEN];
